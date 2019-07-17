@@ -5,7 +5,10 @@ cap = cv2.VideoCapture('walkers.mp4')
 ret, frame1 = cap.read()
 ret, frame2 = cap.read()
 
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+
 while cap.isOpened():
+  actual_gray = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
   diff = cv2.absdiff(frame1, frame2)
   gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
   blur = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -18,13 +21,18 @@ while cap.isOpened():
   for contour in contours:
     (x, y, w, h) = cv2.boundingRect(contour)
 
-    if cv2.contourArea(contour) >= 6000:
+    if cv2.contourArea(contour) >= 2000:
+      face_candid = actual_gray[x:x+w,y:y+h]
+      faces = face_cascade.detectMultiScale(face_candid, 1.3, 5)
       cv2.rectangle(frame1, (x, y), (x + w, y + h), (0, 255, 0), 2)
-      cv2.putText(frame1, "Status: {}".format('Movement'), (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+      for (x, y, w, h) in faces:
+         cv2.rectangle(frame1, (x, y), (x + w, y + h), (255, 0, 0), 2)
+         cv2.putText(frame1, "Face detection: {}".format('Face here'), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+      # cv2.putText(frame1, "Status: {}".format('Movement'), (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
 
   #cv2.drawContours(frame1, contours, -1, (0, 255, 0), 2)
 
-  cv2.imshow('data', dilated)
+  # cv2.imshow('data', dilated)
   cv2.imshow('feed', frame1)
 
   frame1 = frame2
